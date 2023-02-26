@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 - 2022 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
+ * Copyright (c) 2023 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,10 +66,8 @@ linux_readdir(lua_State *L)
 		lua_newtable(L);
 		lua_pushinteger(L, dirent->d_ino);
 		lua_setfield(L, -2, "d_ino");
-#ifdef __linux__
 		lua_pushinteger(L, dirent->d_off);
 		lua_setfield(L, -2, "d_off");
-#endif
 		lua_pushinteger(L, dirent->d_reclen);
 		lua_setfield(L, -2, "d_reclen");
 		lua_pushinteger(L, dirent->d_type);

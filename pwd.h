@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
+ * Copyright (c) 2023 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,7 @@ extern int linux_endpwent(lua_State *);
 extern int linux_getpwent(lua_State *);
 extern int linux_getpwnam(lua_State *);
 extern int linux_getpwuid(lua_State *);
-#ifdef __linux__
 extern int linux_getspnam(lua_State *);
-#endif
 extern int linux_getgrnam(lua_State *);
 extern int linux_getgrgid(lua_State *);
 

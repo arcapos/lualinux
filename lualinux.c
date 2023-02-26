@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 - 2023, Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
+ * Copyright (c) 2023 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,18 +32,13 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 
-#ifdef __linux__
 #include <alloca.h>
-#include <bsd/bsd.h>
-#endif
 #include <errno.h>
 #include <grp.h>
 #include <lua.h>
 #include <lauxlib.h>
 #include <pwd.h>
-#ifdef __linux__
 #include <shadow.h>
-#endif
 #include <signal.h>
 #include <stdlib.h>
 #include <syslog.h>
@@ -553,9 +548,7 @@ static struct constant linux_constant[] = {
 	CONSTANT(SIGPIPE),
 	CONSTANT(SIGALRM),
 	CONSTANT(SIGTERM),
-#ifdef __linux__
 	CONSTANT(SIGSTKFLT),
-#endif
 	CONSTANT(SIGCHLD),
 	CONSTANT(SIGCONT),
 	CONSTANT(SIGSTOP),
@@ -568,9 +561,7 @@ static struct constant linux_constant[] = {
 	CONSTANT(SIGVTALRM),
 	CONSTANT(SIGPROF),
 	CONSTANT(SIGWINCH),
-#ifdef __linux__
 	CONSTANT(SIGPOLL),
-#endif
 	CONSTANT(SIGIO),
 	CONSTANT(SIGPWR),
 	CONSTANT(SIGSYS),
@@ -636,10 +627,8 @@ luaopen_linux(lua_State *L)
 		{ "dlsym",	linux_dlsym },
 		{ "dlclose",	linux_dlclose },
 
-#ifdef __linux__
 		/* shadow password */
 		{ "getspnam",	linux_getspnam },
-#endif
 
 		{ "getgrnam",	linux_getgrnam },
 		{ "getgrgid",	linux_getgrgid },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 - 2016, Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
+ * Copyright (c) 2023 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,11 +31,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <pwd.h>
-
-#ifdef __linux__
-#include <bsd/bsd.h>
 #include <shadow.h>
-#endif
 
 #include "pwd.h"
 
@@ -112,7 +108,6 @@ linux_getpwuid(lua_State *L)
 	return 1;
 }
 
-#ifdef __linux__
 static void
 linux_pushspasswd(lua_State *L, struct spwd *spwd)
 {
@@ -147,7 +142,6 @@ linux_getspnam(lua_State *L)
 		lua_pushnil(L);
 	return 1;
 }
-#endif
 
 static void
 linux_pushgroup(lua_State *L, struct group *grp)
