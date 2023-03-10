@@ -215,45 +215,6 @@ linux_rename(lua_State *L)
 }
 
 static int
-linux_stat(lua_State *L)
-{
-	struct stat statbuf;
-
-	if (stat(luaL_checkstring(L, 1), &statbuf))
-		lua_pushnil(L);
-	else {
-		lua_newtable(L);
-		lua_pushinteger(L, statbuf.st_dev);
-		lua_setfield(L, -2, "st_uid");
-		lua_pushinteger(L, statbuf.st_ino);
-		lua_setfield(L, -2, "st_ino");
-		lua_pushinteger(L, statbuf.st_mode);
-		lua_setfield(L, -2, "st_mode");
-		lua_pushinteger(L, statbuf.st_nlink);
-		lua_setfield(L, -2, "st_nlink");
-		lua_pushinteger(L, statbuf.st_uid);
-		lua_setfield(L, -2, "st_uid");
-		lua_pushinteger(L, statbuf.st_gid);
-		lua_setfield(L, -2, "st_gid");
-		lua_pushinteger(L, statbuf.st_rdev);
-		lua_setfield(L, -2, "st_rdev");
-		lua_pushinteger(L, statbuf.st_size);
-		lua_setfield(L, -2, "st_size");
-		lua_pushinteger(L, statbuf.st_blksize);
-		lua_setfield(L, -2, "st_blksize");
-		lua_pushinteger(L, statbuf.st_blocks);
-		lua_setfield(L, -2, "st_blocks");
-		lua_pushinteger(L, statbuf.st_atime);
-		lua_setfield(L, -2, "st_atime");
-		lua_pushinteger(L, statbuf.st_mtime);
-		lua_setfield(L, -2, "st_mtime");
-		lua_pushinteger(L, statbuf.st_ctime);
-		lua_setfield(L, -2, "st_ctime");
-	}
-	return 1;
-}
-
-static int
 linux_mkdir(lua_State *L)
 {
 	lua_pushinteger(L, mkdir(luaL_checkstring(L, 1),
@@ -425,7 +386,6 @@ static struct constant linux_constant[] = {
 	CONSTANT(SIGIO),
 	CONSTANT(SIGPWR),
 	CONSTANT(SIGSYS),
-
 	{ NULL, 0 }
 };
 
@@ -456,7 +416,6 @@ luaopen_linux(lua_State *L)
 		{ "chown",	linux_chown },
 		{ "chmod",	linux_chmod },
 		{ "rename",	linux_rename },
-		{ "stat",	linux_stat },
 		{ "mkdir" ,	linux_mkdir },
 		{ "mkstemp",	linux_mkstemp },
 		{ "ftruncate",	linux_ftruncate },
