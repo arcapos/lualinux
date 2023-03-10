@@ -229,16 +229,20 @@ linux_mkstemp(lua_State *L)
 	char *tmpnam;
 
 	tmpnam = strdup(luaL_checkstring(L, 1));
-
-	fd = mkstemp(tmpnam);
-	if (fd == -1) {
+	if (tmpnam == NULL) {
 		lua_pushnil(L);
 		lua_pushnil(L);
 	} else {
-		lua_pushinteger(L, fd);
-		lua_pushstring(L, tmpnam);
+		fd = mkstemp(tmpnam);
+		if (fd == -1) {
+			lua_pushnil(L);
+			lua_pushnil(L);
+		} else {
+			lua_pushinteger(L, fd);
+			lua_pushstring(L, tmpnam);
+		}
+		free(tmpnam);
 	}
-	free(tmpnam);
 	return 2;
 }
 
