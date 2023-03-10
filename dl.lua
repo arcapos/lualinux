@@ -1,8 +1,8 @@
-local linux = require 'linux'
+local dl = require 'linux.dl'
 
-local libm, error = linux.dlopen('/usr/lib64/libm.so.6', 'lazy')
+local libm <close>, error = dl.open('/usr/lib64/libm.so.6', 'lazy')
 print(libm, error)
 
 local f, error = libm.floor
 print(f, error)
-print(linux.dlsym(libm, 'floor'))
+print(dl.sym(libm, 'floor'))

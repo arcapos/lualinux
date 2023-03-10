@@ -33,20 +33,12 @@
 #include <grp.h>
 #include <lua.h>
 #include <lauxlib.h>
-#include <pwd.h>
-#include <shadow.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <syslog.h>
 #include <unistd.h>
-#include <dlfcn.h>
 #include <string.h>
 
 #include "lualinux.h"
-#include "dirent.h"
-#include "pwd.h"
-#include "select.h"
-#include "dl.h"
 
 extern char *crypt(const char *key, const char *salt);
 typedef void (*sighandler_t)(int);
@@ -372,134 +364,6 @@ linux_sethostname(lua_State *L)
 	return 1;
 }
 
-static int syslog_options[] = {
-	LOG_CONS,
-	LOG_NDELAY,
-	LOG_NOWAIT,
-	LOG_ODELAY,
-	LOG_PERROR,
-	LOG_PID
-};
-
-static const char *syslog_option_names[] = {
-	"cons",
-	"ndelay",
-	"nowait",
-	"odelay",
-	"perror",
-	"pid",
-	NULL
-};
-
-static int syslog_facilities[] = {
-	LOG_AUTH,
-	LOG_AUTHPRIV,
-	LOG_CRON,
-	LOG_DAEMON,
-	LOG_FTP,
-	LOG_KERN,
-	LOG_LOCAL0,
-	LOG_LOCAL1,
-	LOG_LOCAL2,
-	LOG_LOCAL3,
-	LOG_LOCAL4,
-	LOG_LOCAL5,
-	LOG_LOCAL6,
-	LOG_LOCAL7,
-	LOG_LPR,
-	LOG_MAIL,
-	LOG_NEWS,
-	LOG_SYSLOG,
-	LOG_USER,
-	LOG_UUCP
-};
-
-static const char *syslog_facility_names[] = {
-	"auth",
-	"authpriv",
-	"cron",
-	"daemon",
-	"ftp",
-	"kern",
-	"local0",
-	"local1",
-	"local2",
-	"local3",
-	"local4",
-	"local5",
-	"local6",
-	"local7",
-	"lpr",
-	"mail",
-	"news",
-	"syslog",
-	"user",
-	"uucp",
-	NULL
-};
-
-static int
-linux_openlog(lua_State *L)
-{
-	const char *ident;
-	int n, option, facility;
-
-	ident = luaL_checkstring(L, 1);
-
-	for (option = 0, n = 2; n < lua_gettop(L); n++)
-		option |= syslog_options[luaL_checkoption(L, n, NULL,
-		    syslog_option_names)];
-	facility = syslog_facilities[luaL_checkoption(L, n, NULL,
-	    syslog_facility_names)];
-	openlog(ident, option, facility);
-	return 0;
-}
-
-static int priorities[] = {
-	LOG_EMERG,
-	LOG_ALERT,
-	LOG_CRIT,
-	LOG_ERR,
-	LOG_WARNING,
-	LOG_NOTICE,
-	LOG_INFO,
-	LOG_DEBUG
-};
-
-static const char *priority_names[] = {
-	"emerg",
-	"alert",
-	"crit",
-	"err",
-	"warning",
-	"notice",
-	"info",
-	"debug",
-	NULL
-};
-
-static int
-linux_syslog(lua_State *L)
-{
-	syslog(priorities[luaL_checkoption(L, 1, NULL, priority_names)], "%s",
-	    luaL_checkstring(L, 2));
-	return 0;
-}
-
-static int
-linux_closelog(lua_State *L)
-{
-	closelog();
-	return 0;
-}
-
-static int
-linux_setlogmask(lua_State *L)
-{
-	lua_pushinteger(L, setlogmask(luaL_checkinteger(L, 1)));
-	return 1;
-}
-
 static void
 linux_set_info(lua_State *L)
 {
@@ -511,7 +375,7 @@ linux_set_info(lua_State *L)
 	lua_pushliteral(L, "Linux binding for Lua");
 	lua_settable(L, -3);
 	lua_pushliteral(L, "_VERSION");
-	lua_pushliteral(L, "linux 1.0.0");
+	lua_pushliteral(L, "linux 1.1.0");
 	lua_settable(L, -3);
 }
 
@@ -608,114 +472,12 @@ luaopen_linux(lua_State *L)
 		/* signals */
 		{ "signal",	linux_signal },
 
-		{ "setpwent",	linux_setpwent },
-		{ "endpwent",	linux_endpwent },
-		{ "getpwent",	linux_getpwent },
-		{ "getpwnam",	linux_getpwnam },
-		{ "getpwuid",	linux_getpwuid },
-
-		/* dirent */
-		{ "opendir",	linux_opendir },
-
-		/* dynamic linker */
-		{ "dlopen",	linux_dlopen },
-		{ "dlerror",	linux_dlerror },
-		{ "dlsym",	linux_dlsym },
-		{ "dlclose",	linux_dlclose },
-
-		/* shadow password */
-		{ "getspnam",	linux_getspnam },
-
-		{ "getgrnam",	linux_getgrnam },
-		{ "getgrgid",	linux_getgrgid },
-
 		/* hostname */
 		{ "gethostname",	linux_gethostname },
 		{ "sethostname",	linux_sethostname },
 
-		/* syslog */
-		{ "openlog",	linux_openlog },
-		{ "syslog",	linux_syslog },
-		{ "closelog",	linux_closelog },
-		{ "setlogmask",	linux_setlogmask },
-
-		/* select */
-		{ "select",	linux_select },
-		{ "fd_set",	linux_fd_set },
 		{ NULL, NULL }
 	};
-	struct luaL_Reg fd_set_methods[] = {
-		{ "clr",	linux_fd_set_clr },
-		{ "isset",	linux_fd_set_isset },
-		{ "set",	linux_fd_set_set },
-		{ "zero",	linux_fd_set_zero },
-		{ NULL,		NULL }
-	};
-	struct luaL_Reg dir_methods[] = {
-		{ "__gc",	linux_closedir },
-		{ "__close",	linux_closedir },
-		{ "readdir",	linux_readdir },
-		{ "telldir",	linux_telldir },
-		{ "seekdir",	linux_seekdir },
-		{ "rewinddir",	linux_rewinddir },
-		{ "closedir",	linux_closedir },
-		{ NULL,		NULL }
-	};
-	struct luaL_Reg dl_methods[] = {
-		{ "__gc",	linux_dlclose },
-		{ "__close",	linux_dlclose },
-		{ "__index",	linux_dlsym },
-		{ NULL,		NULL }
-	};
-	if (luaL_newmetatable(L, FD_SET_METATABLE)) {
-		luaL_setfuncs(L, fd_set_methods, 0);
-#if 0
-		lua_pushliteral(L, "__gc");
-		lua_pushcfunction(L, fd_set_clear);
-		lua_settable(L, -3);
-#endif
-		lua_pushliteral(L, "__index");
-		lua_pushvalue(L, -2);
-		lua_settable(L, -3);
-
-		lua_pushliteral(L, "__metatable");
-		lua_pushliteral(L, "must not access this metatable");
-		lua_settable(L, -3);
-	}
-	lua_pop(L, 1);
-
-	if (luaL_newmetatable(L, DIR_METATABLE)) {
-		luaL_setfuncs(L, dir_methods, 0);
-
-		lua_pushliteral(L, "__index");
-		lua_pushvalue(L, -2);
-		lua_settable(L, -3);
-
-		lua_pushliteral(L, "__metatable");
-		lua_pushliteral(L, "must not access this metatable");
-		lua_settable(L, -3);
-	}
-	lua_pop(L, 1);
-	if (luaL_newmetatable(L, DL_METATABLE)) {
-		luaL_setfuncs(L, dl_methods, 0);
-
-#if 0
-		lua_pushliteral(L, "__index");
-		lua_pushvalue(L, -2);
-		lua_settable(L, -3);
-#endif
-
-		lua_pushliteral(L, "__metatable");
-		lua_pushliteral(L, "must not access this metatable");
-		lua_settable(L, -3);
-	}
-	lua_pop(L, 1);
-	if (luaL_newmetatable(L, DLSYM_METATABLE)) {
-		lua_pushliteral(L, "__metatable");
-		lua_pushliteral(L, "must not access this metatable");
-		lua_settable(L, -3);
-	}
-	lua_pop(L, 1);
 
 	luaL_newlib(L, lualinux);
 	linux_set_info(L);
