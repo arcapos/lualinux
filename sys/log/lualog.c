@@ -166,7 +166,6 @@ linux_setlogmask(lua_State *L)
 int
 luaopen_linux_sys_log(lua_State *L)
 {
-	int n;
 	struct luaL_Reg lualog[] = {
 		/* syslog */
 		{ "openlog",	linux_openlog },

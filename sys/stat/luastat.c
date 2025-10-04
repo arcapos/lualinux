@@ -111,7 +111,6 @@ linux_lstat(lua_State *L)
 int
 luaopen_linux_sys_stat(lua_State *L)
 {
-	int n;
 	struct luaL_Reg luastat[] = {
 		{ "stat",	linux_stat },
 		{ "lstat" ,	linux_lstat },

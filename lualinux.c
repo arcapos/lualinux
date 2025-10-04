@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
+ * Copyright (c) 2023 - 2025 Micro Systems Marc Balmer, CH-5073 Gipf-Oberfrick
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <time.h>
 
 #include "lualinux.h"
 
@@ -138,6 +139,23 @@ static int
 linux_sleep(lua_State *L)
 {
 	lua_pushinteger(L, sleep(luaL_checkinteger(L, 1)));
+	return 1;
+}
+
+static int
+linux_msleep(lua_State *L)
+{
+	struct timespec rqt;
+
+	long msec = luaL_checkinteger(L, 1);
+	if (msec >= 1000) {
+		rqt.tv_sec = msec / 1000;
+		rqt.tv_nsec = (msec % 1000) * 1000000;
+	} else {
+		rqt.tv_sec = 0;
+		rqt.tv_nsec = msec * 1000000;
+	}
+	lua_pushinteger(L, nanosleep(&rqt, NULL));
 	return 1;
 }
 
@@ -329,21 +347,6 @@ linux_sethostname(lua_State *L)
 	return 1;
 }
 
-static void
-linux_set_info(lua_State *L)
-{
-	lua_pushliteral(L, "_COPYRIGHT");
-	lua_pushliteral(L, "Copyright (C) 2023 by "
-	    "micro systems marc balmer");
-	lua_settable(L, -3);
-	lua_pushliteral(L, "_DESCRIPTION");
-	lua_pushliteral(L, "Linux binding for Lua");
-	lua_settable(L, -3);
-	lua_pushliteral(L, "_VERSION");
-	lua_pushliteral(L, "linux 1.1.0");
-	lua_settable(L, -3);
-}
-
 static struct constant linux_constant[] = {
 	/* file modes */
 	CONSTANT(S_IRUSR),
@@ -398,42 +401,43 @@ luaopen_linux(lua_State *L)
 {
 	int n;
 	struct luaL_Reg lualinux[] = {
-		{ "arc4random",	linux_arc4random },
-		{ "chdir",	linux_chdir },
-		{ "dup2",	linux_dup2 },
-		{ "errno",	linux_errno },
-		{ "strerror",	linux_strerror },
-		{ "fork",	linux_fork },
-		{ "kill",	linux_kill },
-		{ "getcwd",	linux_getcwd },
-		{ "getpass",	linux_getpass },
-		{ "getpid",	linux_getpid },
-		{ "setpgid",	linux_setpgid },
-		{ "sleep",	linux_sleep },
-		{ "unlink",	linux_unlink },
-		{ "getuid",	linux_getuid },
-		{ "getgid",	linux_getgid },
-		{ "setegid",	linux_setegid },
-		{ "seteuid",	linux_seteuid },
-		{ "setgid",	linux_setgid },
-		{ "setuid",	linux_setuid },
-		{ "chown",	linux_chown },
-		{ "chmod",	linux_chmod },
-		{ "rename",	linux_rename },
-		{ "mkdir" ,	linux_mkdir },
-		{ "mkstemp",	linux_mkstemp },
-		{ "ftruncate",	linux_ftruncate },
+		{ "arc4random",		linux_arc4random },
+		{ "chdir",		linux_chdir },
+		{ "dup2",		linux_dup2 },
+		{ "errno",		linux_errno },
+		{ "strerror",		linux_strerror },
+		{ "fork",		linux_fork },
+		{ "kill",		linux_kill },
+		{ "getcwd",		linux_getcwd },
+		{ "getpass",		linux_getpass },
+		{ "getpid",		linux_getpid },
+		{ "setpgid",		linux_setpgid },
+		{ "sleep",		linux_sleep },
+		{ "msleep",		linux_msleep },
+		{ "unlink",		linux_unlink },
+		{ "getuid",		linux_getuid },
+		{ "getgid",		linux_getgid },
+		{ "setegid",		linux_setegid },
+		{ "seteuid",		linux_seteuid },
+		{ "setgid",		linux_setgid },
+		{ "setuid",		linux_setuid },
+		{ "chown",		linux_chown },
+		{ "chmod",		linux_chmod },
+		{ "rename",		linux_rename },
+		{ "mkdir" ,		linux_mkdir },
+		{ "mkstemp",		linux_mkstemp },
+		{ "ftruncate",		linux_ftruncate },
 
 		/* environment */
-		{ "getenv",	linux_getenv },
-		{ "setenv",	linux_setenv },
-		{ "unsetenv",	linux_unsetenv },
+		{ "getenv",		linux_getenv },
+		{ "setenv",		linux_setenv },
+		{ "unsetenv",		linux_unsetenv },
 
 		/* crypt */
-		{ "crypt",	linux_crypt },
+		{ "crypt",		linux_crypt },
 
 		/* signals */
-		{ "signal",	linux_signal },
+		{ "signal",		linux_signal },
 
 		/* hostname */
 		{ "gethostname",	linux_gethostname },
@@ -443,7 +447,18 @@ luaopen_linux(lua_State *L)
 	};
 
 	luaL_newlib(L, lualinux);
-	linux_set_info(L);
+
+	lua_pushliteral(L, "_COPYRIGHT");
+	lua_pushliteral(L, "Copyright (C) 2023 - 2025 by "
+	    "micro systems marc balmer");
+	lua_settable(L, -3);
+	lua_pushliteral(L, "_DESCRIPTION");
+	lua_pushliteral(L, "Linux binding for Lua");
+	lua_settable(L, -3);
+	lua_pushliteral(L, "_VERSION");
+	lua_pushliteral(L, "linux 1.1.1");
+	lua_settable(L, -3);
+
 	for (n = 0; linux_constant[n].name != NULL; n++) {
 		lua_pushinteger(L, linux_constant[n].value);
 		lua_setfield(L, -2, linux_constant[n].name);

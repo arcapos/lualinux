@@ -62,53 +62,6 @@ to_read(int fd, void *buf, size_t len, int ms)
 	return r;
 }
 
-static int
-asread(int fd, char **ret, int ms)
-{
-	struct pollfd p;
-	int r, n;
-	size_t len, nread;
-	char *s;
-
-	p.fd = fd;
-	p.events = POLLIN;
-	p.revents = 0;
-
-	*ret = malloc(NET_BUFSIZ);
-	if (*ret == NULL)
-		return -1;
-	len = NET_BUFSIZ;
-	nread = 0;
-	s = *ret;
-	do {
-		n = 0;
-		r = poll(&p, 1, ms);
-		switch (r) {
-		case 0:
-			fprintf(stderr, "poll timeout\n");
-			break;
-		case -1:
-			fprintf(stderr, "poll error\n");
-			break;
-		default:
-			if (len - nread > 0) {
-				n = read(fd, s, len - nread);
-				nread += n;
-				s += n;
-			} else {
-				len *= 2;
-				*ret = realloc(*ret, len);
-				if (*ret == NULL)
-					fprintf(stderr, "memory error\n");
-				s = *ret + nread;
-				n = 1;
-			}
-		}
-	} while (n > 0);
-	(*ret)[nread] = '\0';
-	return nread;
-}
-
 /* XXX factor out common code */
 static int
 asreadln(int fd, char **ret, int ms)
